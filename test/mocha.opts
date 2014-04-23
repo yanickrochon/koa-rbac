@@ -1,0 +1,6 @@
+--require should
+--require ./test/init
+--timeout 60000
+--reporter spec
+--ui bdd
+test/**/*.test.js

@@ -1,0 +1,33 @@
+{
+  "name": "koa-rbac",
+  "version": "0.0.0",
+  "description": "Role-Based Acess Control for Koa",
+  "author": "Yanick Rochon <yanick.rochon@gmail.com>",
+  "keywords": [
+    "rbac",
+    "access",
+    "role"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --harmony"
+  },
+  "homepage": "https://github.com/yanickrochon/koa-rbac",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yanickrochon/koa-rbac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yanickrochon/koa-rbac/issues"
+  },
+  "devDependencies": {
+    "semicov": "^0.1.1-2",
+    "should": "^3.3.1",
+    "mocha": "^1.18.2",
+    "co-mocha": "0.0.2"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "error-factory": "0.0.8"
+  }
+}
