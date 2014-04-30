@@ -1,6 +1,6 @@
 {
   "name": "koa-rbac",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Role-Based Acess Control for Koa",
   "author": "Yanick Rochon <yanick.rochon@gmail.com>",
   "keywords": [
@@ -20,15 +20,15 @@
   "bugs": {
     "url": "https://github.com/yanickrochon/koa-rbac/issues"
   },
+  "dependencies": {
+    "error-factory": "0.0.15"
+  },
   "devDependencies": {
     "co-mocha": "0.0.2",
     "koa": "^0.5.5",
     "semicov": "^0.1.1",
     "should": "^3.3.1",
     "supertest": "^0.11.0"
-  },
-  "dependencies": {
-    "error-factory": "0.0.9"
   },
   "license": "MIT"
 }

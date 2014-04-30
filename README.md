@@ -135,6 +135,28 @@ This way, the special permission (ex: `manage`) can be assigned on other roles a
 well, but may be denied, too, if necessary.
 
 
+## Restricted access behaviour
+
+When a rule fails (i.e. not allowed, or denied), each rule mddleware; `allow`
+and `deny`, accept a second argument of type `string` that will send a redirect
+(302 - Moved Temporarily) instead of returning an error (403 - Forbidden). For
+example :
+
+```javascript
+var rbac = require('koa-rbac');
+var koa = require('koa');
+var app = koa();
+var AccessProvider = require('./access-provider');
+
+app.use(rbac.middleware(new AccessProvider()));
+app.use(rbac.allow('update', '/login'));  // redirect to `/login` if not allowed
+app.use(rbac.deny('read'));               // returns "Forbidden" if denied
+app.use(function * (next) {
+  this.body = "Allowed updating but not reading!";
+});
+```
+
+
 ## Contribution
 
 All contributions welcome! Every PR **must** be accompanied by their associated

@@ -116,7 +116,6 @@ describe('Test RBAC', function () {
     yield validate('marge', rbac.allow(['update']), 200);
 
     yield validate('homer', rbac.allow(['create', 'update']), 200);
-    yield validate('homer', rbac.allow('create', 'update'), 200);
     yield validate('homer', rbac.allow('create update'), 200);
 
     yield validate('burns', rbac.allow(['manage']), 200);
@@ -126,8 +125,18 @@ describe('Test RBAC', function () {
     yield validate('burns', rbac.allow(['read']), 403);
 
     yield validate('bart', rbac.deny(['read']), 403);
-    yield validate('burns', rbac.deny('read', 'update'), 200);
-    yield validate('burns', rbac.deny('read', 'manage'), 403);
+    yield validate('burns', rbac.deny(['read', 'update']), 200);
+    yield validate('burns', rbac.deny(['read', 'manage']), 403);
+
+
+    // redirect
+    yield validate('bart', rbac.allow('read', '/foo'), 200);
+    yield validate('marge', rbac.allow(['update'], '/foo'), 200);
+    yield validate('bart', rbac.deny(['read'], '/foo'), 302);
+
+    yield validate('burns', rbac.deny(['read', 'update'], '/foo'), 200);
+    yield validate('bart', rbac.deny(['read'], '/foo'), 302);
+    yield validate('burns', rbac.deny(['read', 'manage'], '/foo'), 302);
 
   });
 
