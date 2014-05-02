@@ -25,10 +25,10 @@
   },
   "devDependencies": {
     "co-mocha": "0.0.2",
-    "koa": "^0.5.5",
-    "semicov": "^0.1.1",
+    "koa": "^0.6.0",
+    "semicov": "^0.1.1-2",
     "should": "^3.3.1",
-    "supertest": "^0.11.0"
+    "supertest": "^0.12.0"
   },
   "license": "MIT"
 }
