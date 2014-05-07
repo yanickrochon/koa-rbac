@@ -8,31 +8,31 @@ describe('Test RBAC', function () {
 
   var roles = {
     'guest': {
-      name: 'Guest',
+      //name: 'Guest',
       permissions: ['foo']
     },
     'reader': {
-      name: 'Reader',
+      //name: 'Reader',
       permissions: ['read'],
       inherited: ['guest']
     },
     'writer': {
-      name: 'Writer',
+      //name: 'Writer',
       permissions: ['create'],
       inherited: ['reader']
     },
     'editor': {
-      name: 'Editor',
+      //name: 'Editor',
       permissions: ['update'],
       inherited: ['reader']
     },
     'director': {
-      name: 'Director',
+      //name: 'Director',
       permissions: ['delete'],
       inherited: ['editor']
     },
     'admin': {
-      name: 'Administrator',
+      //name: 'Administrator',
       permissions: ['manage']
     }
   };

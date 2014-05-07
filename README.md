@@ -67,30 +67,30 @@ Role cache. Normally, these would be stored in a database, or something
 */
 var roles = {
   'guest': {
-    name: 'Guest'
+    //name: 'Guest'
   },
   'reader': {
-    name: 'Reader',
+    //name: 'Reader',
     permissions: ['read'],
-    inherits: ['guest']
+    inherited: ['guest']
   },
   'writer': {
-    name: 'Writer',
+    //name: 'Writer',
     permissions: ['create'],
-    inherits: ['reader']
+    inherited: ['reader']
   },
   'editor': {
-    name: 'Editor',
+    //name: 'Editor',
     permissions: ['update'],
-    inhertis: ['reader']
+    inherited: ['reader']
   },
   'director': {
-    name: 'Director',
+    //name: 'Director',
     permissions: ['delete'],
-    inherits: ['reader', 'editor']
+    inherited: ['reader', 'editor']
   },
   'admin': {
-    name: 'Administrator',
+    //name: 'Administrator',
     permissions: ['manage']
   }
 };
