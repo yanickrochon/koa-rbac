@@ -1,6 +1,6 @@
 {
   "name": "koa-rbac",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Role-Based Acess Control for Koa",
   "author": "Yanick Rochon <yanick.rochon@gmail.com>",
   "keywords": [

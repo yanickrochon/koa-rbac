@@ -14,22 +14,22 @@ describe('Test RBAC', function () {
     'reader': {
       name: 'Reader',
       permissions: ['read'],
-      inherits: ['guest']
+      inherited: ['guest']
     },
     'writer': {
       name: 'Writer',
       permissions: ['create'],
-      inherits: ['reader']
+      inherited: ['reader']
     },
     'editor': {
       name: 'Editor',
       permissions: ['update'],
-      inherits: ['reader']
+      inherited: ['reader']
     },
     'director': {
       name: 'Director',
       permissions: ['delete'],
-      inherits: ['editor']
+      inherited: ['editor']
     },
     'admin': {
       name: 'Administrator',
