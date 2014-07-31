@@ -122,6 +122,28 @@ function * getUserRoles(ctx) {
 }
 ```
 
+**Note**: the argument `ctx` inside `getUserRoles` is the same value as `this`
+inside koa's middleware functions. For example, if using a session storage, such
+as [`koa-session-store`](https://github.com/hiddentao/koa-session-store), it
+can be accessed through `ctx.session`.
+
+
+## Rule inheritance
+
+Rule inheritence is done from bottom to top, and evaluated from top to bottom.
+When declaring rules, a given rule does not inherit from another rule, but instead
+has delcared rules inheriting from it.
+
+In the [usage](#usage) example, the rules are evaluated in a path, from left
+to right, starting at any given node, like so :
+
+```
+    ┌── admin
+    ╎              ┌── editor ──┐
+    └── director ──┤            ├── reader ── guest
+                   └── writer ──┘
+```
+
 
 ## Super User Role (Administrator)
 
@@ -154,6 +176,19 @@ app.use(rbac.deny('read'));               // returns "Forbidden" if denied
 app.use(function * (next) {
   this.body = "Allowed updating but not reading!";
 });
+```
+
+
+## Grouped permissions
+
+To specify more than one permission for a given rule, it is possible to pass an
+array, or a comma-separated string of permissions. For example :
+
+```javascript
+app.use(rbac.allow('list, read'));
+app.use(rbac.deny('post, update, delete'));
+// or
+app.use(rbac.deny([ 'post', 'update', 'delete' ]));
 ```
 
 

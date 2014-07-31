@@ -116,7 +116,7 @@ describe('Test RBAC', function () {
     yield validate('marge', rbac.allow(['update']), 200);
 
     yield validate('homer', rbac.allow(['create', 'update']), 200);
-    yield validate('homer', rbac.allow('create update'), 200);
+    yield validate('homer', rbac.allow('create, update'), 200);
 
     yield validate('burns', rbac.allow(['manage']), 200);
 
@@ -209,7 +209,7 @@ describe('Test RBAC', function () {
       };
     }
 
-    yield validate('marge', [ rbac.allow('read update'), rbac.deny('read') ], 200);
+    yield validate('marge', [ rbac.allow('read, update'), rbac.deny('read') ], 200);
     yield validate('marge', [ rbac.allow('read'), rbac.deny('read') ], 403);
     yield validate('marge', [ rbac.allow('read'), rbac.allow('update'), rbac.deny('read') ], 200);
     yield validate('marge', [ rbac.allow('update'), rbac.allow('read'), rbac.deny('read') ], 200);
