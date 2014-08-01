@@ -130,11 +130,11 @@ can be accessed through `ctx.session`.
 
 ## Rule inheritance
 
-Rule inheritence is done from bottom to top, and evaluated from top to bottom.
-When declaring rules, a given rule does not inherit from another rule, but instead
-has delcared rules inheriting from it.
+Role inheritence is done from bottom to top, and evaluated from top to bottom.
+When declaring roles, a given role does not inherit from another role, but instead
+has delcared roles inheriting from it.
 
-In the [usage](#usage) example, the rules are evaluated in a path, from left
+In the [usage](#usage) example, the roles are evaluated in a path, from left
 to right, starting at any given node, like so :
 
 ```

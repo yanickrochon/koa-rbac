@@ -128,6 +128,15 @@ describe('Test RBAC', function () {
     yield validate('burns', rbac.deny(['read', 'update']), 200);
     yield validate('burns', rbac.deny(['read', 'manage']), 403);
 
+    yield validate('bart', rbac.check({
+      'allow': 'read'
+    }), 200);
+    yield validate('burns', rbac.check({
+      'deny': ['read', 'update']
+    }), 200);
+    yield validate('burns', rbac.check({
+      'deny': ['read', 'manage']
+    }), 403);
 
     // redirect
     yield validate('bart', rbac.allow('read', '/foo'), 200);
@@ -137,6 +146,19 @@ describe('Test RBAC', function () {
     yield validate('burns', rbac.deny(['read', 'update'], '/foo'), 200);
     yield validate('bart', rbac.deny(['read'], '/foo'), 302);
     yield validate('burns', rbac.deny(['read', 'manage'], '/foo'), 302);
+
+    yield validate('marge', rbac.check({
+      'allow': ['update'],
+      'deny': ['read']
+    }), 200);
+    yield validate('marge', rbac.check({
+      'allow': ['manage'],
+      'deny': ['read']
+    }), 403);
+    yield validate('marge', rbac.check({
+      'allow': ['manage'],
+      'deny': ['read']
+    }, '/foo'), 302);
 
   });
 
@@ -214,6 +236,14 @@ describe('Test RBAC', function () {
     yield validate('marge', [ rbac.allow('read'), rbac.allow('update'), rbac.deny('read') ], 200);
     yield validate('marge', [ rbac.allow('update'), rbac.allow('read'), rbac.deny('read') ], 200);
     yield validate('marge', [ rbac.allow('update'), rbac.allow('manage'), rbac.deny('read') ], 200);
+
+    yield validate('marge', [ rbac.check({
+      'allow': [ 'update', 'manage' ],
+      'deny': 'read'
+    }) ], 200);
+    yield validate('marge', [ rbac.check({
+      'allow': [ 'read' ]
+    }), rbac.deny('read') ], 403);
 
   });
 
