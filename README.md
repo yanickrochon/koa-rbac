@@ -41,6 +41,28 @@ ones; as any non-validating rule which do not have a greater weight than a valid
 one will cause a `403 - Forbidden` error to be thrown.
 
 
+## API
+
+* **allow** *(permissions[, redirect])* - use this when specifying a rule that should
+only allow the current user with the given permissions. If the rule fails, the user
+will be redirected to the `redirectl` URL argument value, if specified, or an error
+`403` ("Forbidden") will be returned.
+* **deny** *(permissions[, redirect])* - use this when specifying a rule that should
+restrict the current user with the given permissions. If the rule succeed (the user
+is denied), it will be redirected to the `redirect` URL argument value, if specified,
+or an error `403` ("Forbidden") will be returned.
+* **check** *(objPermissions[, redirect])* - use this when specifying a combined
+allow/deny rule with the given permissions. The argument `objPermissions` should be
+an object declaring one or two keys (`'allow'` and/or `'deny'`) whose values are
+a set of permissions such as provided for the `allow` and `deny` methods. If the rule
+fails (i.e. the user is either not allowed, or denied), it will be redirected to the
+`redirect` URL argument value, if specified, or an error `403` ("Forbidden") will
+be thrown.
+
+**Note**: the argument `permissions` (and the values of the `objPermissions` object)
+are either a string (i.e. a comma-separated list) or an array of permission values.
+
+
 ## Usage
 
 ```javascript
@@ -52,8 +74,12 @@ var app = koa();
 var AccessProvider = require('./access-provider');
 
 app.use(rbac.middleware(new AccessProvider()));
-app.use(rbac.allow('update'));
-app.use(rbac.deny('read'));
+//app.use(rbac.allow('update'));
+//app.use(rbac.deny('read'));
+app.use(rbac.check({
+  'allow': 'update',
+  'deny': 'read'
+}));
 app.use(function * (next) {
   this.body = "Allowed updating but not reading!";
 });
