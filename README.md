@@ -158,7 +158,7 @@ can be accessed through `ctx.session`.
 
 Role inheritence is done from bottom to top, and evaluated from top to bottom.
 When declaring roles, a given role does not inherit from another role, but instead
-has delcared roles inheriting from it.
+has declared roles inheriting from it.
 
 In the [usage](#usage) example, the roles are evaluated in a path, from left
 to right, starting at any given node, like so :
