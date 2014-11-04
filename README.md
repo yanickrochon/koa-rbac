@@ -28,7 +28,7 @@ two methods returning the application's roles configuration and current user's r
 assignments respectively.
 
 Rules are applied in consideration with the roles hierarchy. Top level roles always
-have priority over inherited roles. This measn that, for example, given two roles :
+have priority over inherited roles. This means that, for example, given two roles :
 `reader` and `editor`, respectively assigned the permissions `read` and `update`, and
 where `editor` inherits from `reader`, a rule allowing `read`, but denying `update`
 will validate if a user is an `editor`, but not a `reader`. If, `read` is instead
