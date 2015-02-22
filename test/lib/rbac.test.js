@@ -101,7 +101,7 @@ describe('Test RBAC', function () {
       app.use(validateionMiddleware);
 
       app.use(function * () {
-        this._accessProvider.should.equal(accessProvider);
+        this.rbac.accessProvider.should.equal(accessProvider);
         this.status = 200;
       });
 
@@ -220,7 +220,7 @@ describe('Test RBAC', function () {
       });
 
       app.use(function * () {
-        this._accessProvider.should.equal(accessProvider);
+        this.rbac.accessProvider.should.equal(accessProvider);
         this.status = 200;
       });
 
