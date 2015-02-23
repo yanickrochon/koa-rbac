@@ -88,7 +88,7 @@ describe('Test RBAC', function () {
   it('should allow / deny', function * () {
     this.timeout(1000);
 
-    function validate(identity, validateionMiddleware, status) {
+    function validate(identity, validateionMiddleware, status, accept) {
       var app = koa();
 
       app.use(function * (next) {
@@ -108,57 +108,65 @@ describe('Test RBAC', function () {
       return function (done) {
         request(app.listen())
         .get('/')
+        .set('Accept', accept)
         .expect(status, done);
       };
     }
 
-    yield validate('bart', rbac.allow(['read']), 200);
-    yield validate('marge', rbac.allow(['update']), 200);
+    yield validate('bart', rbac.allow(['read']), 200, 'text/html');
+    yield validate('marge', rbac.allow(['update']), 200, 'text/html');
 
-    yield validate('homer', rbac.allow(['create', 'update']), 200);
-    yield validate('homer', rbac.allow('create, update'), 200);
+    yield validate('homer', rbac.allow(['create', 'update']), 200, 'text/html');
+    yield validate('homer', rbac.allow('create, update'), 200, 'text/html');
 
-    yield validate('burns', rbac.allow(['manage']), 200);
+    yield validate('burns', rbac.allow(['manage']), 200, 'text/html');
 
-    yield validate('homer', rbac.allow(['foo']), 200);
+    yield validate('homer', rbac.allow(['foo']), 200, 'text/html');
 
-    yield validate('burns', rbac.allow(['read']), 403);
+    yield validate('burns', rbac.allow(['read']), 403, 'text/html');
 
-    yield validate('bart', rbac.deny(['read']), 403);
-    yield validate('burns', rbac.deny(['read', 'update']), 200);
-    yield validate('burns', rbac.deny(['read', 'manage']), 403);
+    yield validate('bart', rbac.deny(['read']), 403, 'text/html');
+    yield validate('burns', rbac.deny(['read', 'update']), 200, 'text/html');
+    yield validate('burns', rbac.deny(['read', 'manage']), 403, 'text/html');
 
     yield validate('bart', rbac.check({
       'allow': 'read'
-    }), 200);
+    }), 200, 'text/html');
     yield validate('burns', rbac.check({
       'deny': ['read', 'update']
-    }), 200);
+    }), 200, 'text/html');
     yield validate('burns', rbac.check({
       'deny': ['read', 'manage']
-    }), 403);
+    }), 403, 'text/html');
 
     // redirect
-    yield validate('bart', rbac.allow('read', '/foo'), 200);
-    yield validate('marge', rbac.allow(['update'], '/foo'), 200);
-    yield validate('bart', rbac.deny(['read'], '/foo'), 302);
+    yield validate('bart', rbac.allow('read', '/foo'), 200, 'text/html');
+    yield validate('marge', rbac.allow(['update'], '/foo'), 200, 'text/html');
+    yield validate('bart', rbac.deny(['read'], '/foo'), 302, 'text/html');
+    yield validate('bart', rbac.deny(['read'], '/foo'), 403, 'application/json');
 
-    yield validate('burns', rbac.deny(['read', 'update'], '/foo'), 200);
-    yield validate('bart', rbac.deny(['read'], '/foo'), 302);
-    yield validate('burns', rbac.deny(['read', 'manage'], '/foo'), 302);
+    yield validate('burns', rbac.deny(['read', 'update'], '/foo'), 200, 'text/html');
+    yield validate('bart', rbac.deny(['read'], '/foo'), 302, 'text/html');
+    yield validate('bart', rbac.deny(['read'], '/foo'), 403, 'application/json');
+    yield validate('burns', rbac.deny(['read', 'manage'], '/foo'), 302, 'text/html');
+    yield validate('burns', rbac.deny(['read', 'manage'], '/foo'), 403, 'application/json');
 
     yield validate('marge', rbac.check({
       'allow': ['update'],
       'deny': ['read']
-    }), 200);
+    }), 200, 'text/html');
     yield validate('marge', rbac.check({
       'allow': ['manage'],
       'deny': ['read']
-    }), 403);
+    }), 403, 'text/html');
     yield validate('marge', rbac.check({
       'allow': ['manage'],
       'deny': ['read']
-    }, '/foo'), 302);
+    }, '/foo'), 302, 'text/html');
+    yield validate('marge', rbac.check({
+      'allow': ['manage'],
+      'deny': ['read']
+    }, '/foo'), 403, 'application/json ');
 
   });
 
@@ -166,7 +174,7 @@ describe('Test RBAC', function () {
   it('should allow / deny if no middleware', function * () {
     this.timeout(1000);
 
-    function validate(identity, validateionMiddleware, status) {
+    function validate(identity, validateionMiddleware, status, accept) {
       var app = koa();
 
       app.use(function * (next) {
@@ -186,18 +194,19 @@ describe('Test RBAC', function () {
       return function (done) {
         request(app.listen())
         .get('/')
+        .set('Accept', accept)
         .expect(status, done);
       };
     }
 
-    yield validate(null, rbac.allow('read'), 200);
-    yield validate('bart', rbac.allow(['manage']), 200);
-    yield validate('burns', rbac.allow(['read']), 200);
+    yield validate(null, rbac.allow('read'), 200, 'text/html');
+    yield validate('bart', rbac.allow(['manage']), 200, 'text/html');
+    yield validate('burns', rbac.allow(['read']), 200, 'text/html');
 
-    yield validate(null, rbac.deny(['foo']), 403);
-    yield validate(null, rbac.deny(['read']), 403);
-    yield validate('bart', rbac.deny(['manage']), 403);
-    yield validate('burns', rbac.deny(['manage']), 403);
+    yield validate(null, rbac.deny(['foo']), 403, 'text/html');
+    yield validate(null, rbac.deny(['read']), 403, 'text/html');
+    yield validate('bart', rbac.deny(['manage']), 403, 'text/html');
+    yield validate('burns', rbac.deny(['manage']), 403, 'text/html');
 
   });
 
@@ -205,7 +214,7 @@ describe('Test RBAC', function () {
   it('should allow composed rules', function * () {
     this.timeout(1000);
 
-    function validate(identity, validateionMiddlewares, status) {
+    function validate(identity, validateionMiddlewares, status, accept) {
       var app = koa();
 
       app.use(function * (next) {
@@ -227,23 +236,24 @@ describe('Test RBAC', function () {
       return function (done) {
         request(app.listen())
         .get('/')
+        .set('Accept', accept)
         .expect(status, done);
       };
     }
 
-    yield validate('marge', [ rbac.allow('read, update'), rbac.deny('read') ], 200);
-    yield validate('marge', [ rbac.allow('read'), rbac.deny('read') ], 403);
-    yield validate('marge', [ rbac.allow('read'), rbac.allow('update'), rbac.deny('read') ], 200);
-    yield validate('marge', [ rbac.allow('update'), rbac.allow('read'), rbac.deny('read') ], 200);
-    yield validate('marge', [ rbac.allow('update'), rbac.allow('manage'), rbac.deny('read') ], 200);
+    yield validate('marge', [ rbac.allow('read, update'), rbac.deny('read') ], 200, 'text/html');
+    yield validate('marge', [ rbac.allow('read'), rbac.deny('read') ], 403, 'text/html');
+    yield validate('marge', [ rbac.allow('read'), rbac.allow('update'), rbac.deny('read') ], 200, 'text/html');
+    yield validate('marge', [ rbac.allow('update'), rbac.allow('read'), rbac.deny('read') ], 200, 'text/html');
+    yield validate('marge', [ rbac.allow('update'), rbac.allow('manage'), rbac.deny('read') ], 200, 'text/html');
 
     yield validate('marge', [ rbac.check({
       'allow': [ 'update', 'manage' ],
       'deny': 'read'
-    }) ], 200);
+    }) ], 200, 'text/html');
     yield validate('marge', [ rbac.check({
       'allow': [ 'read' ]
-    }), rbac.deny('read') ], 403);
+    }), rbac.deny('read') ], 403, 'text/html');
 
   });
 
