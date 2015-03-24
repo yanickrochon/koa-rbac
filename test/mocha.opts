@@ -4,4 +4,4 @@
 --timeout 60000
 --reporter spec
 --ui bdd
-test/**/*.test.js
+--recursive

@@ -10,7 +10,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "mocha --harmony"
+    "test": "mocha --harmony",
+    "test-cov": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover node_modules/mocha/bin/_mocha",
+    "test-travis": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly"
   },
   "homepage": "https://github.com/yanickrochon/koa-rbac",
   "repository": {
@@ -21,10 +23,11 @@
     "url": "https://github.com/yanickrochon/koa-rbac/issues"
   },
   "dependencies": {
-    "error-factory": "0.1.4"
+    "error-factory": "0.1.5"
   },
   "devDependencies": {
     "co-mocha": "1.1.0",
+    "istanbul-harmony": "^0.3.1",
     "koa": "^0.18.1",
     "semicov": "^0.1.1-2",
     "should": "^5.2.0",

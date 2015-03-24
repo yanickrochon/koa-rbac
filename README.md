@@ -1,5 +1,7 @@
 # Koa RBAC
 
+[![Build Status](https://travis-ci.org/yanickrochon/koa-rbac.svg)](https://travis-ci.org/yanickrochon/koa-rbac)[![Coverage Status](https://coveralls.io/repos/yanickrochon/koa-rbac/badge.svg)](https://coveralls.io/r/yanickrochon/koa-rbac)
+
 Role-Based Access Control for [Koa](https://github.com/koajs/koa)
 
 This module follows the [NIST RBAC model](http://en.wikipedia.org/wiki/NIST_RBAC_model)
@@ -27,7 +29,7 @@ and `getUserAccess`, two methods returning the application's roles
 configuration and current user's roles assignments respectively.
 
 Rules are applied in consideration with the roles hierarchy. Top level roles
-always have priority over inherited roles. This measn that, for example, given
+always have priority over inherited roles. This means that, for example, given
 two roles : `reader` and `editor`, respectively assigned the permissions `read`
 and `update`, and where `editor` inherits from `reader`, a rule allowing
 `read`, but denying `update` will validate if a user is an `editor`, but not a
