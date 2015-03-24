@@ -1,6 +1,6 @@
 # Koa RBAC
 
-[![Build Status](https://travis-ci.org/yanickrochon/koa-rbac.svg)](https://travis-ci.org/yanickrochon/koa-rbac)[![Coverage Status](https://coveralls.io/repos/yanickrochon/koa-rbac/badge.svg)](https://coveralls.io/r/yanickrochon/koa-rbac)
+[![Build Status](https://travis-ci.org/yanickrochon/koa-rbac.svg)](https://travis-ci.org/yanickrochon/koa-rbac)[![Coverage Status](https://coveralls.io/repos/yanickrochon/koa-rbac/badge.svg?branch=master)](https://coveralls.io/r/yanickrochon/koa-rbac?branch=master)
 
 Role-Based Access Control for [Koa](https://github.com/koajs/koa)
 
