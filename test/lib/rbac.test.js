@@ -34,6 +34,15 @@ describe('Test RBAC', function () {
     'admin': {
       //name: 'Administrator',
       permissions: ['manage']
+    },
+
+    'cyclic1': {
+      permissions: ['crc1'],
+      inherited: ['cyclic2']
+    },
+    'cyclic2': {
+      permissions: ['crc2'],
+      inherited: ['cyclic1']
     }
   };
 
@@ -41,7 +50,8 @@ describe('Test RBAC', function () {
     'bart': ['guest', 'reader'],
     'marge': ['editor'],
     'homer': ['admin', 'director'],
-    'burns': ['admin']
+    'burns': ['admin'],
+    'phsycho bob': ['cyclic1']
   };
 
   var accessProvider = new function AccessProvider() {
@@ -222,6 +232,12 @@ describe('Test RBAC', function () {
     this.timeout(1000);
 
     yield validate(true, 'marge', rbac.allow('read && update'), 200, 'text/html');
+  });
+
+
+  it('should detect and handle cyclical dependencies', function * () {
+    yield validate(true, 'phsycho bob', rbac.allow('crc1'), 200, 'text/html');
+    //yield validate(true, 'phsycho bob', rbac.allow('crc2'), 200, 'text/html');
   });
 
 });
