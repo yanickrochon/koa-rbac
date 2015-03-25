@@ -43,6 +43,10 @@ describe('Test RBAC', function () {
     'cyclic2': {
       permissions: ['crc2'],
       inherited: ['cyclic1']
+    },
+
+    'special': {
+      // note: no permissions
     }
   };
 
@@ -51,7 +55,8 @@ describe('Test RBAC', function () {
     'marge': ['editor'],
     'homer': ['admin', 'director'],
     'burns': ['admin'],
-    'phsycho bob': ['cyclic1']
+    'phsycho bob': ['cyclic1'],
+    'ralph': ['special', 'learned']  // unknown role 'learned'!
   };
 
   var accessProvider = new function AccessProvider() {
@@ -165,6 +170,7 @@ describe('Test RBAC', function () {
     yield validate(true, 'bart', rbac.allow('read', '/foo'), 200, 'text/html');
     yield validate(true, 'marge', rbac.allow(['update'], '/foo'), 200, 'text/html');
     yield validate(true, 'bart', rbac.deny(['read'], '/foo'), 302, 'text/html');
+    yield validate(true, 'bart', rbac.allow('manage', '/foo'), 302, 'text/html');
     yield validate(true, 'bart', rbac.deny(['read'], '/foo'), 403, 'application/json');
 
     yield validate(true, 'burns', rbac.deny(['read', 'update'], '/foo'), 200, 'text/html');
@@ -237,7 +243,71 @@ describe('Test RBAC', function () {
 
   it('should detect and handle cyclical dependencies', function * () {
     yield validate(true, 'phsycho bob', rbac.allow('crc1'), 200, 'text/html');
-    //yield validate(true, 'phsycho bob', rbac.allow('crc2'), 200, 'text/html');
+    yield validate(true, 'phsycho bob', rbac.allow('crc2'), 200, 'text/html');
   });
+
+
+  it('should fail with invalid permissions', function * () {
+    [
+      undefined, void 0, null, false, true, -1, 0, 1, '',
+      [], {}, function () {}, function * () {}, /./
+    ].forEach(function (invalidPermissions) {
+      try {
+        validate(true, 'phsycho bob', rbac.allow(invalidPermissions), 200, 'text/html')
+        throw Error('Test failed');
+      } catch (e) {
+        e.message.should.equal('Invalid permissions');
+      }
+    });
+  });
+
+  it('should fail with missing permissions', function * () {
+    try {
+      yield validate(true, 'marge', rbac.check({}), 200, 'text/html');
+
+      throw Error('Test failed');
+    } catch (e) {
+      e.message.should.equal('Missing permissions');
+    }
+  });
+
+
+  it('should allow validating inside a custom middlewares', function * () {
+    yield validate(true, 'phsycho bob', [
+      function * (next) {
+        var allowed = yield this.rbac.isAllowed('crc1');
+
+        allowed.should.equal(0);
+
+        yield* next;
+      },
+      function * (next) {
+        var denied = yield this.rbac.isDenied('crc2');
+
+        denied.should.equal(1);
+
+        yield* next;
+      }
+    ], 200, 'text/html');
+  });
+
+
+  it('should simply fail for no roles', function * () {
+    // note: unknown identity === no roles
+    yield validate(true, 'lisa', rbac.allow('foo'), 403, 'text/html');
+    yield validate(true, 'lisa', rbac.deny('foo'), 200, 'text/html');
+  });
+
+
+  it('should ignore invalid permission values', function * () {
+    yield validate(true, 'homer', rbac.allow('create, , update'), 200, 'text/html');
+    yield validate(true, 'homer', rbac.allow(['create', null, 'update']), 200, 'text/html');
+    yield validate(true, 'homer', rbac.allow([ ['create', null, 'foo'], 'update']), 200, 'text/html');
+  });
+
+
+  it('should handle roles with no permissions', function * () {
+    yield validate(true, 'ralph', rbac.allow('foo'), 403, 'text/html');
+  })
 
 });
