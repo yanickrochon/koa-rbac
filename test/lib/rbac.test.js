@@ -2,83 +2,63 @@
 
 describe('Test RBAC', function () {
 
-  var request = require('supertest');
-  var koa = require('koa');
-  var rbac = require('../../lib/rbac');
+  const request = require('supertest');
+  const koa = require('koa');
+  const rbac = require('../../lib/rbac');
 
-  var roles = {
-    'guest': {
-      //name: 'Guest',
-      permissions: ['foo']
-    },
-    'reader': {
-      //name: 'Reader',
-      permissions: ['read'],
-      inherited: ['guest']
-    },
-    'writer': {
-      //name: 'Writer',
-      permissions: ['create'],
-      inherited: ['reader']
-    },
-    'editor': {
-      //name: 'Editor',
-      permissions: ['update'],
-      inherited: ['reader']
-    },
-    'director': {
-      //name: 'Director',
-      permissions: ['delete'],
-      inherited: ['editor']
-    },
-    'admin': {
-      //name: 'Administrator',
-      permissions: ['manage']
-    },
+  const RULES = {
+    roles: {
+      'guest': {
+        //name: 'Guest',
+        permissions: ['foo']
+      },
+      'reader': {
+        //name: 'Reader',
+        permissions: ['read'],
+        inherited: ['guest']
+      },
+      'writer': {
+        //name: 'Writer',
+        permissions: ['create'],
+        inherited: ['reader']
+      },
+      'editor': {
+        //name: 'Editor',
+        permissions: ['update'],
+        inherited: ['reader']
+      },
+      'director': {
+        //name: 'Director',
+        permissions: ['delete'],
+        inherited: ['editor']
+      },
+      'admin': {
+        //name: 'Administrator',
+        permissions: ['manage']
+      },
 
-    'cyclic1': {
-      permissions: ['crc1'],
-      inherited: ['cyclic2']
-    },
-    'cyclic2': {
-      permissions: ['crc2'],
-      inherited: ['cyclic1']
-    },
+      'cyclic1': {
+        permissions: ['crc1'],
+        inherited: ['cyclic2']
+      },
+      'cyclic2': {
+        permissions: ['crc2'],
+        inherited: ['cyclic1']
+      },
 
-    'special': {
-      // note: no permissions
+      'special': {
+        // note: no permissions
+      }
+    },
+    users: {
+      'bart': ['guest', 'reader'],
+      'marge': ['editor'],
+      'homer': ['admin', 'director'],
+      'burns': ['admin'],
+      'phsycho bob': ['cyclic1'],
+      'ralph': ['special', 'learned']  // unknown role 'learned'!
     }
   };
-
-  var userRoles = {
-    'bart': ['guest', 'reader'],
-    'marge': ['editor'],
-    'homer': ['admin', 'director'],
-    'burns': ['admin'],
-    'phsycho bob': ['cyclic1'],
-    'ralph': ['special', 'learned']  // unknown role 'learned'!
-  };
-
-  var accessProvider = new function AccessProvider() {
-    this.getRolePermissions = getRolePermissions;
-    this.getUserRoles = getUserRoles;
-  }
-
-  /**
-  Return the role defined by `roleName`
-  */
-  function * getRolePermissions(roleName) {
-    // NOTE : the method should return an object similar to the one described here
-    return roles[roleName];
-  }
-
-  /**
-  Return the roles assigned to the user. Each item of the returned array will
-  invoke `getRole` with it's item value
-  */
-  function * getUserRoles(ctx) {
-    return userRoles[ctx.identity];
-  }
 
 
   function validate(useRbacMiddleware, identity, validateionMiddleware, status, accept) {
