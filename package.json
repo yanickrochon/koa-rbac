@@ -8,7 +8,7 @@
     "access",
     "role"
   ],
-  "main": "index.js",
+  "main": "rbac.js",
   "scripts": {
     "test": "mocha",
     "test-cov": "istanbul cover _mocha",
@@ -24,10 +24,9 @@
   },
   "dependencies": {
     "error-factory": "0.1.6",
-    "rbac-a": "^0.1.1"
+    "rbac-a": "^0.1.2"
   },
   "devDependencies": {
-    "co": "^4.6.0",
     "istanbul": "^0.4.1",
     "koa": "^1.1.2",
     "mocha": "^2.3.4",
