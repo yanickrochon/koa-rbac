@@ -62,6 +62,10 @@ describe('Test RBAC', function () {
     }
   };
 
+  const MIDDLEWARE_OPTIONS = {
+    rbac: new RBAC(new JsonProvider(RULES))
+  };
+
 
   function validate(useRbacMiddleware, identity, validateionMiddleware, status, accept) {
     const app = koa();
@@ -75,12 +79,7 @@ describe('Test RBAC', function () {
     }
 
     if (useRbacMiddleware) {
-      rbac = new RBAC();
-      rbac.addProvider(new JsonProvider(RULES));
-
-      app.use(middleware({
-        rbac: rbac
-      }));
+      app.use(middleware(useRbacMiddleware));
     }
     if (Array.isArray(validateionMiddleware)) {
       validateionMiddleware.forEach(function (middleware) {
@@ -136,7 +135,7 @@ describe('Test RBAC', function () {
   });
 
   it('should accept valid RBAC-A instance', function () {
-    const rbac = new RBAC();
+    const rbac = new RBAC(new JsonProvider(RULES));
     const options = {
       rbac: rbac
     };
@@ -161,43 +160,43 @@ describe('Test RBAC', function () {
     this.timeout(1000);
 
     return Promise.all([
-      validate(true, 'bart', middleware.allow(['read']), 200, 'text/html'),
-      validate(true, 'marge', middleware.allow(['update']), 200, 'text/html'),
-      validate(true, 'homer', middleware.allow(['create', 'update']), 200, 'text/html'),
-      validate(true, 'homer', middleware.allow('create, update'), 200, 'text/html'),
-      validate(true, 'burns', middleware.allow(['manage']), 200, 'text/html'),
-      validate(true, 'homer', middleware.allow(['foo']), 200, 'text/html'),
-      validate(true, 'burns', middleware.allow(['read']), 403, 'text/html'),
-      validate(true, 'marge', middleware.allow('read && update'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow(['read']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow(['update']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow(['create', 'update']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow('create, update'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.allow(['manage']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow(['foo']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.allow(['read']), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow('read && update'), 200, 'text/html'),
 
-      validate(true, 'marge', middleware.allow('read && update'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow('read && update'), 200, 'text/html'),
 
-      validate(true, 'bart', middleware.deny(['read']), 403, 'text/html'),
-      validate(true, 'bart', middleware.deny(['read']), 403, 'text/html'),
-      validate(true, 'burns', middleware.deny(['read', 'update']), 200, 'text/html'),
-      validate(true, 'burns', middleware.deny(['read', 'manage']), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read']), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read']), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'update']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'manage']), 403, 'text/html'),
 
-      validate(true, 'bart', middleware.check({ 'allow': 'read' }), 200, 'text/html'),
-      validate(true, 'burns', middleware.check({ 'deny': ['read', 'update'] }), 200, 'text/html'),
-      validate(true, 'burns', middleware.check({ 'deny': ['read', 'manage'] }), 403, 'text/html'),
-      validate(true, 'marge', middleware.check({ 'allow': ['update'], 'deny': ['read'] }), 200, 'text/html'),
-      validate(true, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.check({ 'allow': 'read' }), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.check({ 'deny': ['read', 'update'] }), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.check({ 'deny': ['read', 'manage'] }), 403, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['update'], 'deny': ['read'] }), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }), 403, 'text/html'),
 
       // redirect
-      validate(true, 'bart', middleware.allow('read', null, '/foo'), 200, 'text/html'),
-      validate(true, 'marge', middleware.allow(['update'], null, '/foo'), 200, 'text/html'),
-      validate(true, 'bart', middleware.allow('manage', null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('read', null, '/foo'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow(['update'], null, '/foo'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('manage', null, '/foo'), 302, 'text/html'),
 
-      validate(true, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
-      validate(true, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
-      validate(true, 'burns', middleware.deny(['read', 'update'], null, '/foo'), 200, 'text/html'),
-      validate(true, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
-      validate(true, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
-      validate(true, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'text/html'),
-      validate(true, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'application/json'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'update'], null, '/foo'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'application/json'),
 
-      validate(true, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'text/html'),
-      validate(true, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'application/json '),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'application/json '),
     ]);
   });
 
@@ -223,11 +222,11 @@ describe('Test RBAC', function () {
     this.timeout(1000);
 
     return Promise.all([
-      validate(true, 'homer', middleware.allow('create, update'), 200, 'text/html'),
-      validate(true, 'homer', middleware.allow(['create', 'update']), 200, 'text/html'),
-      validate(true, 'homer', middleware.allow([ ['create', 'foo'], 'update']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow('create, update'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow(['create', 'update']), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow([ ['create', 'foo'], 'update']), 200, 'text/html'),
 
-      validate(true, 'homer', middleware.check(), 403, 'text/html')
+      validate(MIDDLEWARE_OPTIONS, 'homer', middleware.check(), 403, 'text/html')
     ]);
   });
 
@@ -236,7 +235,16 @@ describe('Test RBAC', function () {
     this.timeout(1000);
 
     return Promise.all([
-      validate(true, null, middleware.allow('create, update'), 403, 'text/html')
+      validate(MIDDLEWARE_OPTIONS, null, middleware.allow('create, update'), 403, 'text/html')
+    ]);
+  });
+
+
+  it('should fail if no RBAC instance', function () {
+    this.timeout(1000);
+
+    return Promise.all([
+      validate({}, 'homer', middleware.allow('create, update'), 403, 'text/html')
     ]);
   });
 
@@ -245,7 +253,7 @@ describe('Test RBAC', function () {
     this.timeout(1000);
 
     return Promise.all([
-      validate(true, 'phsycho bob', [
+      validate(MIDDLEWARE_OPTIONS, 'phsycho bob', [
         function * (next) {
           var allowed = yield this.rbac.check('crc1');
 

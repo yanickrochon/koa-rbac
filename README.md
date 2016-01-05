@@ -4,8 +4,7 @@
 
 Role-Based Access Control for [Koa](https://github.com/koajs/koa)
 
-This module follows the [NIST RBAC model](http://en.wikipedia.org/wiki/NIST_RBAC_model)
-and offer a flexible solution to allow or restrict user operations.
+This module follows the [NIST RBAC model](http://en.wikipedia.org/wiki/NIST_RBAC_model) and offer a flexible solution to allow or restrict user operations.
 
 
 ## Install
@@ -13,34 +12,6 @@ and offer a flexible solution to allow or restrict user operations.
 ```
 npm install koa-rbac --save
 ```
-
-
-## Introduction
-
-In an RBAC system, permissions are assigned to roles, not users. Therefore, roles act as a ternary relation between permissions and users. Permissions are
-static, defined in the applications. Roles, on the other hand, are dynamic and
-can be defined from an application interface and saved in a datastore.
-
-This module is not dependent on a authentication, a user session, or a
-datastore system. The relation between the user and it's roles are specified
-by an `AccessProvider`. It is the application's responsibility to implement
-such provider, which requires at least only two methods; `getRolePermissions`
-and `getUserAccess`, two methods returning the application's roles
-configuration and current user's roles assignments respectively.
-
-Rules are applied in consideration with the roles hierarchy. Top level roles
-always have priority over inherited roles. This means that, for example, given
-two roles : `reader` and `editor`, respectively assigned the permissions `read`
-and `update`, and where `editor` inherits from `reader`, a rule allowing
-`read`, but denying `update` will validate if a user is an `editor`, but not a
-`reader`. If, `read` is instead directly assigned to the `editor` role
-(inheriting `reader` or not), then the previous rule would not validate for
-either an `editor` and a `reader` because `read` would be a top level
-permission and has equal weight with the allowed permission.
-
-When declaring rules on a resource, **allow** rules must be applied *before*
-the **deny** ones; as any non-validating rule which do not have a greater
-weight than a valid one will cause a `403 - Forbidden` error to be thrown.
 
 
 ## API
@@ -71,14 +42,17 @@ permission values.
 ```javascript
 // index.js
 
-var rbac = require('koa-rbac');
-var koa = require('koa');
-var app = koa();
-var AccessProvider = require('./access-provider');
+const rbac = require('koa-rbac');
+const JsonProvider = require('rbac-a/lib/providers/json');
+const koa = require('koa');
+const app = koa();
+const rules = require('path/to/rules');
+const options = { 
+  rbac: new rbac.RBAC(new JsonProvider(rules))
+  // identity: function (ctx) { ... }
+};
 
-app.use(rbac.middleware(new AccessProvider()));
-//app.use(rbac.allow('update'));
-//app.use(rbac.deny('read'));
+app.use(rbac.middleware(options));
 app.use(rbac.check({
   'allow': 'update',
   'deny': 'read'
@@ -86,154 +60,45 @@ app.use(rbac.check({
 app.use(function * (next) {
   this.body = "Allowed updating but not reading!";
 });
+
 ```
 
-```javascript
-// access-provider.js
-
-/**
-Role cache. Normally, these would be stored in a database, or something
-*/
-var roles = {
-  'guest': {
-    //name: 'Guest'
+```json
+{
+  "roles": {
+    "guest": {
+    },
+    "reader": {
+      "permissions": ["read"],
+      "inherited": ["guest"]
+    },
+    "writer": {
+      "permissions": ["create"],
+      "inherited": ["reader"]
+    },
+    "editor": {
+      "permissions": ["update"],
+      "inherited": ["reader"]
+      "attributes": ["dailySchedule"]
+    },
+    "director": {
+      "permissions": ["delete"],
+      "inherited": ["reader", "editor"],
+    },
+    "admin": {
+      "permissions": ["manage"],
+      "inherited": ["director"]
+    }
   },
-  'reader': {
-    //name: 'Reader',
-    permissions: ['read'],
-    inherited: ['guest']
-  },
-  'writer': {
-    //name: 'Writer',
-    permissions: ['create'],
-    inherited: ['reader']
-  },
-  'editor': {
-    //name: 'Editor',
-    permissions: ['update'],
-    inherited: ['reader']
-  },
-  'director': {
-    //name: 'Director',
-    permissions: ['delete'],
-    inherited: ['reader', 'editor']
-  },
-  'admin': {
-    //name: 'Administrator',
-    permissions: ['manage'],
-    inherited: ['director']
+  "users": {
+    ...
   }
-};
-
-module.exports = AccessProvider;
-
-/**
-AccessProvider constructor
-*/
-function AccessProvider() {
-  this.getRolePermissions = getRolePermissions;
-  this.getUserRoles = getUserRoles;
-}
-
-/**
-Return the role defined by `roleName`
-*/
-function * getRolePermissions(roleName) {
-  // NOTE : the method should return an object similar to the one described here
-  return roles[roleName];
-}
-
-/**
-Return the roles assigned to the user. Each item of the returned array will
-invoke `getRole` with it's item value
-*/
-function * getUserRoles(ctx) {
-  return ['guest', 'reader'];
 }
 ```
 
-**Note**: the argument `ctx` inside `getUserRoles` is the same value as `this`
-inside koa's middleware functions. For example, if using a session storage,
-such as [`koa-session-store`](https://github.com/hiddentao/koa-session-store),
-it can be accessed through `ctx.session`.
+**Note**: the argument `ctx` inside the identity function is the same value as `this` inside koa's middleware functions. For example, if using a session storage, such as [`koa-session`](https://github.com/koajs/session), it can be accessed through `ctx.session`.
 
-
-## Rule inheritance
-
-Role inheritence is done from bottom to top, and evaluated from top to bottom.
-When declaring roles, a given role does not inherit from another role, but
-instead has declared roles inheriting from it.
-
-In the [usage](#usage) example, the roles are evaluated in a path, from left
-to right, starting at any given node, like so :
-
-```
-    
-                           ┌── editor ──┐
-    ── admin ── director ──┤            ├── reader ── guest
-                           └── writer ──┘
-```
-
-### Cyclical inheritance
-
-No error will be emitted for cyclical inheritance. However, the validation
-will not search any deeper once a cyclical inheritance is detected.
-
-
-## Super User Role (Administrator)
-
-This RBAC module does not have a built-in "administrator" role or permission.
-Such privileged role must be implemented by the application. This can be
-achieved with a role (ex: `admin`), which is not inherited (i.e. no parent),
-with a special permission (ex: `manage`), and allow this special permission
-only and on every resource that has an *allow*` or *deny* rule set.
-
-This way, the special permission (ex: `manage`) can be assigned on other roles
-as well, but may be denied, too, if necessary.
-
-
-## Restricted access behaviour
-
-When a rule fails (i.e. not allowed, or denied), each rule mddleware; `allow`
-and `deny`, accept a second argument of type `string` that will send a redirect
-(302 - Moved Temporarily) instead of returning an error (403 - Forbidden). For
-example :
-
-```javascript
-var rbac = require('koa-rbac');
-var koa = require('koa');
-var app = koa();
-var AccessProvider = require('./access-provider');
-
-app.use(rbac.middleware(new AccessProvider()));
-app.use(rbac.allow('update', '/login'));  // redirect to `/login` if not allowed
-app.use(rbac.deny('read'));               // returns "Forbidden" if denied
-app.use(function * (next) {
-  this.body = "Allowed updating but not reading!";
-});
-```
-
-
-## Grouped permissions
-
-To specify more than one permission for a given rule, it is possible to pass an
-array, or a comma-separated string of permissions. For example :
-
-```javascript
-app.use(rbac.allow('list, read'));
-app.use(rbac.deny('post, update, delete'));
-// or
-app.use(rbac.deny([ 'post', 'update', 'delete' ]));
-```
-
-The above example would validate if the user has *any* (i.e. `OR`) of the
-specified roles. For cases where users should be valid for *all* (i.e. `AND`)
-specified roles, separate each role with the `&&` delimiter.
-
-```javascript
-app.use(rbac.allow('list&&read&&review'));
-app.use(rbac.deny('post && update && delete'));
-```
+See [rbac-a](https://www.npmjs.com/package/rbac-a) for more information.
 
 
 ## Contribution

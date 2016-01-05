@@ -11,6 +11,7 @@ module.exports.allow = allowMiddleware;
 module.exports.deny = denyMiddleware;
 module.exports.check = checkMiddleware;
 module.exports.InvalidOptionException = InvalidOptionException;
+module.exports.RBAC = RBAC;
 
 
 /**
@@ -26,9 +27,7 @@ Options
 function middleware(options) {
   options = options || {};
 
-  if (!('rbac' in options)) {
-    options.rbac = new RBAC();
-  } else if (!(options.rbac instanceof RBAC)) {
+  if (('rbac' in options) && !(options.rbac instanceof RBAC)) {
     throw InvalidOptionException('Invalid RBAC instance');
   }
 
@@ -44,17 +43,17 @@ function middleware(options) {
     Object.defineProperty(this, 'rbac', {
       enumerable: true,
       writable: false,
-      value: Object.create(options.rbac, {
+      value: Object.create(options.rbac || {}, {
         // current allowed priority
         check: {
           enumerable: true,
           writable: false,
           value: function (permissions, params) {
-            return Promise.resolve().then(function () {
+            return options.rbac && Promise.resolve().then(function () {
               return options.identity(ctx);
             }).then(function (user) {
               return user && options.rbac.check(user, permissions, params) || NaN;
-            });
+            }) || Promise.resolve(NaN);
           }
         },
         _restrict: {
