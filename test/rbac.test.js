@@ -183,20 +183,20 @@ describe('Test RBAC', function () {
       validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }), 403, 'text/html'),
 
       // redirect
-      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('read', null, '/foo'), 200, 'text/html'),
-      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow(['update'], null, '/foo'), 200, 'text/html'),
-      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('manage', null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('read', '/foo'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow(['update'], {}, '/foo'), 200, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow('manage','/foo'), 302, 'text/html'),
 
-      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
-      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], {}, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], '/foo'), 302, 'application/json'),
       validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'update'], null, '/foo'), 200, 'text/html'),
-      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], '/foo'), 302, 'text/html'),
       validate(MIDDLEWARE_OPTIONS, 'bart', middleware.deny(['read'], null, '/foo'), 302, 'application/json'),
       validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'text/html'),
       validate(MIDDLEWARE_OPTIONS, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 302, 'application/json'),
 
-      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'text/html'),
-      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, null, '/foo'), 302, 'application/json '),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, '/foo'), 302, 'text/html'),
+      validate(MIDDLEWARE_OPTIONS, 'marge', middleware.check({ 'allow': ['manage'], 'deny': ['read'] }, {}, '/foo'), 302, 'application/json '),
     ]);
   });
 

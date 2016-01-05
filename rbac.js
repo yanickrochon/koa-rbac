@@ -99,6 +99,11 @@ Return a middleware to allow only for the given permissions.
 @param redirectUrl {string} (optional) if not allowed, try to redirect
 */
 function allowMiddleware(permissions, params, redirectUrl) {
+  if (arguments.length < 3 && typeof params === 'string') {
+    redirectUrl = params;
+    params = undefined;
+  }
+
   return function * (next) {
     const rbac = this.rbac;
     var allowedPriority;
@@ -124,6 +129,11 @@ Return a middleware to deny any with the given permissions.
 @param redirectUrl {string} (optional) if not allowed, try to redirect
 */
 function denyMiddleware(permissions, params, redirectUrl) {
+  if (arguments.length < 3 && typeof params === 'string') {
+    redirectUrl = params;
+    params = undefined;
+  }
+
   return function * (next) {
     const rbac = this.rbac;
     var deniedPriority;
@@ -154,6 +164,11 @@ Return a middleware to allow and not deny any with the given permissions.
 @param redirectUrl {string} (optional) if not allowed, try to redirect
 */
 function checkMiddleware(permissions, params, redirectUrl) {
+  if (arguments.length < 3 && typeof params === 'string') {
+    redirectUrl = params;
+    params = undefined;
+  }
+
   return function * (next) {
     const rbac = this.rbac;
     var allowedPriority;
