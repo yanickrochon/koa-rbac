@@ -33,7 +33,9 @@ const koa = require('koa');
 const app = koa();
 const rules = require('path/to/rules');
 const options = { 
-  rbac: new rbac.RBAC(new rbac.RBAC.providers.JsonProvider(rules))
+  rbac: new rbac.RBAC({
+    provider: new rbac.RBAC.providers.JsonProvider(rules)
+  })
   // identity: function (ctx) { ... }
 };
 
