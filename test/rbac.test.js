@@ -63,7 +63,7 @@ describe('Test RBAC', function () {
   };
 
   const MIDDLEWARE_OPTIONS = {
-    rbac: new RBAC(new JsonProvider(RULES))
+    rbac: new RBAC({ provider: new JsonProvider(RULES) })
   };
 
 
@@ -135,7 +135,7 @@ describe('Test RBAC', function () {
   });
 
   it('should accept valid RBAC-A instance', function () {
-    const rbac = new RBAC(new JsonProvider(RULES));
+    const rbac = new RBAC({ provider: new JsonProvider(RULES) });
     const options = {
       rbac: rbac
     };
