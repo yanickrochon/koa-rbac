@@ -36,7 +36,7 @@ const options = {
   rbac: new rbac.RBAC({
     provider: new rbac.RBAC.providers.JsonProvider(rules)
   })
-  // identity: function (ctx) { ... }
+  // identity: function (ctx) { return ctx && ctx.user } // passes `user` to rbac-a provider
 };
 
 app.use(rbac.middleware(options));
