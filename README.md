@@ -32,7 +32,7 @@ const rbac = require('koa-rbac');
 const koa = require('koa');
 const app = koa();
 const rules = require('path/to/rules');
-const options = { 
+const options = {
   rbac: new rbac.RBAC({
     provider: new rbac.RBAC.providers.JsonProvider(rules)
   })
@@ -47,40 +47,6 @@ app.use(rbac.check({
 app.use(function * (next) {
   this.body = "Allowed updating but not reading!";
 });
-
-```
-
-```json
-{
-  "roles": {
-    "guest": {
-    },
-    "reader": {
-      "permissions": ["read"],
-      "inherited": ["guest"]
-    },
-    "writer": {
-      "permissions": ["create"],
-      "inherited": ["reader"]
-    },
-    "editor": {
-      "permissions": ["update"],
-      "inherited": ["reader"],
-      "attributes": ["dailySchedule"]
-    },
-    "director": {
-      "permissions": ["delete"],
-      "inherited": ["reader", "editor"],
-    },
-    "admin": {
-      "permissions": ["manage"],
-      "inherited": ["director"]
-    }
-  },
-  "users": {
-    ...
-  }
-}
 ```
 
 **Note**: the argument `ctx` inside the identity function is the same value as `this` inside koa's middleware functions. For example, if using a session storage, such as [`koa-session`](https://github.com/koajs/session), it can be accessed through `ctx.session`.

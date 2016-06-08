@@ -1,6 +1,6 @@
 {
   "name": "koa-rbac",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Role-Based Acess Control for Koa",
   "author": "Yanick Rochon <yanick.rochon@gmail.com>",
   "keywords": [
@@ -24,14 +24,14 @@
   },
   "dependencies": {
     "error-factory": "0.1.6",
-    "rbac-a": "^0.2.4"
+    "rbac-a": "^0.2.5"
   },
   "devDependencies": {
-    "istanbul": "^0.4.1",
-    "koa": "^1.1.2",
-    "mocha": "^2.3.4",
-    "should": "^8.0.2",
-    "supertest": "^1.1.0"
+    "istanbul": "^0.4.3",
+    "koa": "^1.2.0",
+    "mocha": "^2.5.3",
+    "should": "^9.0.0",
+    "supertest": "^1.2.0"
   },
   "engines" : {
     "node" : ">=4.2"
