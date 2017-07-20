@@ -27,6 +27,7 @@
     "rbac-a": "^0.2.5"
   },
   "devDependencies": {
+    "babel-register": "^6.24.1",
     "istanbul": "^0.4.5",
     "koa": "^2.3.0",
     "mocha": "^3.4.2",

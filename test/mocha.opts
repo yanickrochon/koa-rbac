@@ -2,3 +2,4 @@
 --timeout 60000
 --reporter spec
 --ui bdd
+--compilers js:babel-register
