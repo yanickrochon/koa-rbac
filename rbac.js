@@ -101,7 +101,7 @@ function allowMiddleware(permissions, params, redirectUrl) {
     params = undefined;
   }
 
-  return async function (ctx, next) {
+  return async (ctx, next) => {
     const rbac = ctx.rbac;
 
     if (rbac) {
@@ -130,7 +130,7 @@ function denyMiddleware(permissions, params, redirectUrl) {
     params = undefined;
   }
 
-  return async function (ctx, next) {
+  return async (ctx, next) => {
     const rbac = ctx.rbac;
 
     if (rbac) {
