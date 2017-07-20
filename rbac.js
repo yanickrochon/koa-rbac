@@ -165,7 +165,7 @@ function checkMiddleware(permissions, params, redirectUrl) {
     params = undefined;
   }
 
-  return async function (ctx, next) {
+  return async (ctx, next) => {
     const rbac = ctx.rbac;
 
     if (rbac) {
