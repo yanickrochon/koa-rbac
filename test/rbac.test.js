@@ -68,13 +68,12 @@ describe('Test RBAC', function () {
 
 
   function validate(useRbacMiddleware, identity, validateionMiddleware, status, accept) {
-    const app = koa();
-    var rbac;
+    const app = new koa();
 
     if (identity) {
-      app.use(function * (next) {
-        this.user = identity;
-        yield next;
+      app.use(function (ctx, next) {
+        ctx.user = identity;
+        return next();
       });
     }
 
@@ -89,24 +88,24 @@ describe('Test RBAC', function () {
       app.use(validateionMiddleware);
     }
 
-    app.use(function * () {
-      this.status = 200;
+    app.use(function (ctx) {
+      ctx.status = 200;
     });
 
     return new Promise(function (resolve, reject) {
       const error = new Error();
 
       request(app.listen())
-      .get('/')
-      .set('Accept', accept)
-      .expect(status, function (err, res) {
-        if (err) {
-          error.message = err.message;
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
+        .get('/')
+        .set('Accept', accept)
+        .expect(status, function (err) {
+          if (err) {
+            error.message = err.message;
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
     });
   }
 
@@ -118,7 +117,7 @@ describe('Test RBAC', function () {
   it('should be a valid RBAC-A instance', function () {
     [
       undefined, null, false, true, 0, NaN, Infinity, '', 'hello', [], {},
-      function () {}, function * () {}, function RBAC() {},
+      function () {}, async function () {}, function RBAC() {},
       /./, new Date()
     ].forEach(function (rbac) {
       +function () { middleware({ rbac: rbac }); }.should.throw('Invalid RBAC instance');
@@ -254,19 +253,19 @@ describe('Test RBAC', function () {
 
     return Promise.all([
       validate(MIDDLEWARE_OPTIONS, 'phsycho bob', [
-        function * (next) {
-          var allowed = yield this.rbac.check('crc1');
+        async function (ctx, next) {
+          const allowed = await ctx.rbac.check('crc1');
 
           allowed.should.equal(1);
 
-          yield* next;
+          return next();
         },
-        function * (next) {
-          var allowed = yield this.rbac.check('crc2');
+        async function (ctx, next) {
+          const allowed = await ctx.rbac.check('crc2');
 
           allowed.should.equal(2);
 
-          yield* next;
+          return next();
         }
       ], 200, 'text/html')
     ]);

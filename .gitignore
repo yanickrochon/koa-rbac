@@ -10,3 +10,5 @@ lib-cov
 npm-debug.log
 node_modules
 coverage
+.idea/
+package-lock.json
