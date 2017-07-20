@@ -44,8 +44,8 @@ app.use(rbac.check({
   'allow': 'update',
   'deny': 'read'
 }));
-app.use(function * (next) {
-  this.body = "Allowed updating but not reading!";
+app.use(function (ctx) {
+  ctx.body = "Allowed updating but not reading!";
 });
 ```
 
