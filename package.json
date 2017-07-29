@@ -28,7 +28,6 @@
     "istanbul": "^0.4.5",
     "jest": "^20.0.1",
     "koa": "^2.3.0",
-    "should": "^11.2.1",
     "supertest": "^3.0.0"
   },
   "engines": {
