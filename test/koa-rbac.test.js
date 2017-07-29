@@ -1,12 +1,13 @@
 
-describe('Test RBAC', function () {
+describe('Test RBAC', () => {
 
+  const assert = require('assert');
   const request = require('supertest');
   const koa = require('koa');
   const RBAC = require('rbac-a');
   const JsonProvider = require('rbac-a/lib/providers/json');
 
-  const middleware = require('../rbac');
+  const middleware = require('../koa-rbac');
 
   const RULES = {
     roles: {
@@ -71,7 +72,7 @@ describe('Test RBAC', function () {
     const app = new koa();
 
     if (identity) {
-      app.use(function (ctx, next) {
+      app.use((ctx, next) => {
         ctx.user = identity;
         return next();
       });
@@ -81,9 +82,7 @@ describe('Test RBAC', function () {
       app.use(middleware(useRbacMiddleware));
     }
     if (Array.isArray(validateionMiddleware)) {
-      validateionMiddleware.forEach(function (middleware) {
-        app.use(middleware);
-      });
+      validateionMiddleware.forEach(middleware => app.use(middleware));
     } else {
       app.use(validateionMiddleware);
     }
@@ -92,48 +91,47 @@ describe('Test RBAC', function () {
       ctx.status = 200;
     });
 
-    return new Promise(function (resolve, reject) {
-      const error = new Error();
+    const error = new Error();
 
-      request(app.listen())
-        .get('/')
-        .set('Accept', accept)
-        .expect(status, function (err) {
-          if (err) {
-            error.message = err.message;
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-    });
+    return request(app.listen())
+      .get('/')
+      .set('Accept', accept)
+      .expect(status)
+      .catch(err => {
+        error.message = err.message;
+        throw error;
+      })
+    ;
   }
 
 
-  it('should return middleware with default options', function () {
-    middleware().should.be.instanceOf(Function);
+  it('should return middleware with default options', () => {
+    assert.ok(middleware() instanceof Function, 'Middleware is not a function');
   });
 
-  it('should be a valid RBAC-A instance', function () {
+  it('should be a valid RBAC-A instance', () => {
     [
       undefined, null, false, true, 0, NaN, Infinity, '', 'hello', [], {},
       function () {}, async function () {}, function RBAC() {},
       /./, new Date()
-    ].forEach(function (rbac) {
-      +function () { middleware({ rbac: rbac }); }.should.throw('Invalid RBAC instance');
-    });
+    ].forEach(rbac => assert.throws(() => middleware({ rbac }), 'Did not throw with value : ' + JSON.stringify(rbac)));
   });
 
-  it('should be a valid identity function', function () {
+  it('should be a valid identity function', () => {
     [
       undefined, null, false, true, 0, NaN, Infinity, '', 'hello', [], {},
       /./, new Date()
-    ].forEach(function (rbac) {
-      +function () { middleware({ identity: rbac }); }.should.throw('Invalid identity function');
-    });
+    ].forEach(identity => assert.throws(() => middleware({ identity }), 'Did not throw with value : ' + JSON.stringify(identity)));
   });
 
-  it('should accept valid RBAC-A instance', function () {
+  it('should be a valid restriction handler', () => {
+    [
+      undefined, null, false, true, 0, NaN, Infinity, '', 'hello', [], {},
+      /./, new Date()
+    ].forEach(restrictionHandler => assert.throws(() => middleware({ restrictionHandler }), 'Did not throw with value : ' + JSON.stringify(restrictionHandler)));
+  });
+
+  it('should accept valid RBAC-A instance', () => {
     const rbac = new RBAC({ provider: new JsonProvider(RULES) });
     const options = {
       rbac: rbac
@@ -141,10 +139,10 @@ describe('Test RBAC', function () {
 
     middleware(options);
 
-    options.rbac.should.equal(rbac);
+    assert.strictEqual(options.rbac, rbac, 'Failed to set rbac instance');
   });
 
-  it('should accept valid identity function', function () {
+  it('should accept valid identity function', () => {
     const identity = function () {};
     const options = {
       identity: identity
@@ -152,12 +150,10 @@ describe('Test RBAC', function () {
 
     middleware(options);
 
-    options.identity.should.equal(identity);
+    assert.strictEqual(options.identity, identity, 'Failed to set identity function');
   });
 
-  it('should allow / deny', function () {
-    this.timeout(1000);
-
+  it('should allow / deny', () => {
     return Promise.all([
       validate(MIDDLEWARE_OPTIONS, 'bart', middleware.allow(['read']), 200, 'text/html'),
       validate(MIDDLEWARE_OPTIONS, 'marge', middleware.allow(['update']), 200, 'text/html'),
@@ -200,9 +196,7 @@ describe('Test RBAC', function () {
   });
 
 
-  it('should allow / deny if no middleware', function () {
-    this.timeout(1000);
-
+  it('should allow / deny if no middleware', () => {
     return Promise.all([
       validate(false, null, middleware.allow('read'), 200, 'text/html'),
       validate(false, 'bart', middleware.allow(['manage']), 200, 'text/html'),
@@ -217,9 +211,30 @@ describe('Test RBAC', function () {
     ]);
   });
 
-  it('should ignore invalid permission values', function () {
-    this.timeout(1000);
+  it('should execute restriction handler on deny', () => {
+    const middlewareOptions = {
+      rbac: new RBAC({ provider: new JsonProvider(RULES) }),
+      restrictionHandler: (ctx, permissions) => {
+        restricted.push(permissions);
+        ctx.status = 418;
+      }
+    }
+    var restricted = [];
 
+    return Promise.all([
+      validate(middlewareOptions, 'bart', middleware.allow(['read']), 200, 'text/html'),
+      validate(middlewareOptions, 'bart', middleware.deny(['read'], '/foo'), 418, 'application/json'),
+      validate(middlewareOptions, 'burns', middleware.deny(['read', 'manage'], null, '/foo'), 418, 'application/json'),
+    ]).then(() => {
+      const expected = [
+        ["read"],
+        ["read","manage"]
+      ];
+      assert.deepStrictEqual(restricted, expected, 'Failed to received expected restriction : ' + JSON.stringify(restricted));
+    });
+  });
+
+  it('should ignore invalid permission values', () => {
     return Promise.all([
       validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow('create, update'), 200, 'text/html'),
       validate(MIDDLEWARE_OPTIONS, 'homer', middleware.allow(['create', 'update']), 200, 'text/html'),
@@ -230,40 +245,34 @@ describe('Test RBAC', function () {
   });
 
 
-  it('should fail if no user', function () {
-    this.timeout(1000);
-
+  it('should fail if no user', () => {
     return Promise.all([
       validate(MIDDLEWARE_OPTIONS, null, middleware.allow('create, update'), 403, 'text/html')
     ]);
   });
 
 
-  it('should fail if no RBAC instance', function () {
-    this.timeout(1000);
-
+  it('should fail if no RBAC instance', () => {
     return Promise.all([
       validate({}, 'homer', middleware.allow('create, update'), 403, 'text/html')
     ]);
   });
 
 
-  it('should allow validating inside a custom middlewares', function () {
-    this.timeout(1000);
-
+  it('should allow validating inside a custom middlewares', () => {
     return Promise.all([
       validate(MIDDLEWARE_OPTIONS, 'phsycho bob', [
-        async function (ctx, next) {
+        async (ctx, next) => {
           const allowed = await ctx.rbac.check('crc1');
 
-          allowed.should.equal(1);
+          assert.strictEqual(allowed, 1, 'Failed to check crc1');
 
           return next();
         },
-        async function (ctx, next) {
+        async (ctx, next) => {
           const allowed = await ctx.rbac.check('crc2');
 
-          allowed.should.equal(2);
+          assert.strictEqual(allowed, 2, 'Failed to check crc2');
 
           return next();
         }

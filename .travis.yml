@@ -4,5 +4,5 @@ node_js:
   - "8"
 matrix:
   fast_finish: true
-script: "npm run-script test-travis"
+script: "npm run-script test-cov"
 after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"

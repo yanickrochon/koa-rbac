@@ -1,6 +1,6 @@
 {
   "name": "koa-rbac",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Role-Based Acess Control for Koa 2",
   "author": "Yanick Rochon <yanick.rochon@gmail.com>",
   "keywords": [
@@ -8,11 +8,10 @@
     "access",
     "role"
   ],
-  "main": "rbac.js",
+  "main": "koa-rbac.js",
   "scripts": {
-    "test": "mocha",
-    "test-cov": "istanbul cover _mocha",
-    "test-travis": "istanbul cover _mocha --report lcovonly"
+    "test": "jest --forceExit",
+    "test-cov": "npm run test -- --coverage"
   },
   "homepage": "https://github.com/yanickrochon/koa-rbac",
   "repository": {
@@ -23,19 +22,28 @@
     "url": "https://github.com/yanickrochon/koa-rbac/issues"
   },
   "dependencies": {
-    "error-factory": "^0.1.6",
     "rbac-a": "^0.2.5"
   },
   "devDependencies": {
-    "babel-register": "^6.24.1",
     "istanbul": "^0.4.5",
+    "jest": "^20.0.1",
     "koa": "^2.3.0",
-    "mocha": "^3.4.2",
     "should": "^11.2.1",
     "supertest": "^3.0.0"
   },
   "engines": {
     "node": ">=7.6"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "jest": {
+    "testMatch": [
+      "**/test/**/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "lcov"
+    ],
+    "bail": true,
+    "testEnvironment": "node"
+  }
 }

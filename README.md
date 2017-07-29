@@ -36,7 +36,8 @@ const options = {
   rbac: new rbac.RBAC({
     provider: new rbac.RBAC.providers.JsonProvider(rules)
   })
-  // identity: function (ctx) { return ctx && ctx.user } // passes `user` to rbac-a provider
+  // identity(ctx) { return ctx && ctx.user } // passes `user` to rbac-a provider
+  // restrictionHandler(ctx, permissions, redirectUrl) { ctx.status = 403; }   // manually handle restricted responses
 };
 
 app.use(rbac.middleware(options));

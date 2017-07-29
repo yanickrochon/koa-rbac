@@ -1,17 +1,10 @@
 
 const RBAC = require('rbac-a');
-const errorFactory = require('error-factory');
 
-const InvalidOptionException = errorFactory('rbac.InvalidOptionException');
-
-module.exports = middleware;
-module.exports.middleware = middleware;
-module.exports.allow = allowMiddleware;
-module.exports.deny = denyMiddleware;
-module.exports.check = checkMiddleware;
-module.exports.InvalidOptionException = InvalidOptionException;
-module.exports.RBAC = RBAC;
-
+/**
+Define custom error type
+*/
+class InvalidOptionException extends Error {}
 
 /**
  Koa middleware.
@@ -27,13 +20,17 @@ function middleware (options) {
   options = options || {};
 
   if (('rbac' in options) && !(options.rbac instanceof RBAC)) {
-    throw InvalidOptionException('Invalid RBAC instance');
+    throw new InvalidOptionException('Invalid RBAC instance');
   }
 
   if (!('identity' in options)) {
     options.identity = defaultIdentity;
   } else if (typeof options.identity !== 'function') {
-    throw InvalidOptionException('Invalid identity function');
+    throw new InvalidOptionException('Invalid identity function');
+  }
+
+  if (('restrictionHandler' in options) && (typeof options.restrictionHandler !== 'function')) {
+    throw new InvalidOptionException('Invalid restriction handler');
   }
 
   return (ctx, next) => {
@@ -56,10 +53,10 @@ function middleware (options) {
         _restrict: {
           enumerable: false,
           writable: false,
-          value: function restrict(redirectUrl) {
-            // TODO : conditional redirect
-
-            if (redirectUrl) {
+          value: function restrict(permissions, redirectUrl) {
+            if (options.restrictionHandler) {
+              return options.restrictionHandler(ctx, permissions, redirectUrl);
+            } else if (redirectUrl) {
               return ctx.redirect(redirectUrl);
             } else {
               ctx.status = 403;
@@ -108,7 +105,7 @@ function allowMiddleware(permissions, params, redirectUrl) {
       const allowedPriority = await rbac.check(permissions, params);
 
       if (!allowedPriority) {
-        return rbac._restrict(redirectUrl);
+        return rbac._restrict(permissions, redirectUrl);
       }
     }
 
@@ -137,7 +134,7 @@ function denyMiddleware(permissions, params, redirectUrl) {
       const deniedPriority = await rbac.check(permissions, params);
 
       if (deniedPriority) {
-        return rbac._restrict(redirectUrl);
+        return rbac._restrict(permissions, redirectUrl);
       }
     } else {
       ctx.status = 403;
@@ -187,10 +184,19 @@ function checkMiddleware(permissions, params, redirectUrl) {
       }
 
       if (isNaN(allowedPriority) || (!isNaN(deniedPriority) && (deniedPriority <= allowedPriority))) {
-        return rbac._restrict(redirectUrl);
+        return rbac._restrict(permissions, redirectUrl);
       }
     }
 
     return next();
   };
 }
+
+
+module.exports = middleware;
+module.exports.middleware = middleware;
+module.exports.allow = allowMiddleware;
+module.exports.deny = denyMiddleware;
+module.exports.check = checkMiddleware;
+module.exports.InvalidOptionException = InvalidOptionException;
+module.exports.RBAC = RBAC;
